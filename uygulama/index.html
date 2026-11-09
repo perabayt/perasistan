@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!-- Perasistan arayüzü — masaüstü uygulamasıyla aynı HTML/CSS/JS, tanıtım köprüsüyle (kopru.js). -->
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Perasistan — canlı arayüz (tanıtım)</title>
+  <link rel="icon" href="pera.ico">
+  <link rel="stylesheet" href="stil.css?v=86">
+  <script src="/_ortak/serit.js" defer></script>
+</head>
+<body>
+  <div id="kabuk">
+    <div id="kenar-isik"></div>
+    <header>
+      <span id="durum" class="bekliyor"><i id="durum-nokta"></i><span id="durum-yazi">BEKLİYOR</span></span>
+      <span id="baslik">PERASİSTAN</span>
+      <span id="sag-kume"><span id="saat">--:--</span><span id="sesli-dugme" title="Sesli mod (Ctrl+Alt+S)"><svg viewBox="0 0 24 24"><path d="M12 4a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3z"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V20"/></svg></span><span id="mini-dugme" title="Mini moda küçült"><svg viewBox="0 0 24 24"><path d="M6 17h12"/></svg></span><span id="tam-ekran" title="Tam ekran aç/kapat"><svg viewBox="0 0 24 24"><path d="M5 9V6.5A1.5 1.5 0 0 1 6.5 5H9M15 5h2.5A1.5 1.5 0 0 1 19 6.5V9M19 15v2.5a1.5 1.5 0 0 1-1.5 1.5H15M9 19H6.5A1.5 1.5 0 0 1 5 17.5V15"/></svg></span><span id="yardim-ac" title="Komutlar ve ayarlar"><svg viewBox="0 0 24 24"><path d="M9.2 9.3a2.9 2.9 0 1 1 4.2 2.6c-.9.5-1.4 1-1.4 2v.6"/><circle cx="12" cy="17.8" r="1.05" fill="currentColor" stroke="none"/></svg></span><span id="kapat-dugme" title="Perasistan'ı kapat"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></span></span>
+    </header>
+    <div id="bildirim"><span id="bildirim-metin"></span><span id="bildirim-kapat">✕</span></div>
+    <div id="yardim"></div>
+    <div id="mini" title="Büyütmek için tıkla">
+      <canvas id="mini-karinca" width="360" height="56"></canvas>
+      <span id="mini-nokta"></span>
+      <span id="mini-metin">Perasistan</span>
+    </div>
+    <canvas id="karincalar"></canvas>
+    <div id="grid"></div>
+    <section id="log"></section>
+    <div id="palet">
+      <input id="palet-arama" type="text" placeholder="komut ara…" autocomplete="off" spellcheck="false">
+      <div id="palet-liste"></div>
+      <div id="palet-ipucu">↑↓ gez · Enter çalıştır · Esc kapat</div>
+    </div>
+    <div id="oneri-serit"></div>
+    <div id="sesli-serit">
+      <span id="sesli-nokta"></span>
+      <span id="sesli-durum">Dinliyorum…</span>
+      <span id="sesli-cubuklar"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span id="sesli-sus" title="Perasistan'ın sözünü kes (Esc)">sus</span>
+      <span id="sesli-bitir">bitir</span>
+    </div>
+    <div id="is-serit">
+      <span id="is-ad">İş</span>
+      <span id="is-cubuk"><i id="is-dolgu"></i></span>
+      <span id="is-yuzde">%0</span>
+      <span id="is-fazla"></span>
+      <span id="is-iptal" title="İşi durdur">✕</span>
+    </div>
+    <div id="hizli-cevap"></div>
+    <footer>
+      <span id="istem">›</span>
+      <input id="giris" type="text" placeholder="yaz ya da Perasistan de" autocomplete="off" spellcheck="false">
+      <button id="gonder" type="button" title="Gönder (Enter)" aria-label="Gönder">
+        <svg id="gonder-ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M12 6l-6.5 6.5M12 6l6.5 6.5"/></svg>
+        <svg id="gonder-kare" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.6"/></svg>
+      </button>
+    </footer>
+  </div>
+  <script src="katalog.js?v=3"></script>
+  <script src="kopru.js?v=5"></script>
+  <script src="zengin.js?v=86"></script>
+  <script src="karinca.js?v=86"></script>
+  <script src="pera.js?v=86"></script>
+</body>
+</html>

@@ -1,0 +1,1697 @@
+/* stil.css — Perasistan görünümü. Açık tema, Perabayt kimliği.
+   Tasarım dili: sakin yüzeyler, ince çizgiler, katmanlı yumuşak gölgeler.
+   UI yazıları sistem sans fontu (Segoe UI Variable); VERİ (saat, telemetri,
+   log komutları) monospace kalır — ikisinin karşıtlığı hiyerarşiyi kurar. */
+
+:root {
+  /* Palet — ayarlar.json yüklenince üzerine yazılır */
+  --zemin: #f5f5f7;
+  --yuzey: #ffffff;
+  --vurgu: #5c6e14;
+  --ikincil: #d97706;
+  /* Kehribar YAZI olarak zayıf: #d97706 cam üstünde 3,09:1 (ölçüldü) — yol ve
+     adresler okunmuyordu. Süsleme (kenar, simge, damga) parlak kehribarla
+     kalıyor, YAZI daha koyu bir tonla yazılıyor: 4,8:1. Marka rengi
+     kaybolmuyor, yalnızca yazıda koyulaşıyor. */
+  --ikincil-yazi: #a85a04;
+  --metin: #1d1d1f;
+  /* ÖLÇÜLDÜ (araclar/arayuz_olcum.py): #86868b cam üstünde 3,51:1 veriyordu —
+     WCAG AA normal yazı için 4,5 gerekiyor. Açıklama, etiket, saat damgası
+     hep bu renkti, yani cevapların yarısı eşiğin altındaydı. #6e6e73 ile
+     4,8:1'e çıkıyor ve "sönük" hissi korunuyor (gövde 16,3:1). */
+  --sonuk: #6e6e73;
+
+  /* Türetilmiş sabitler */
+  --cizgi: rgba(29, 29, 31, 0.07);            /* kılcal ayırıcı */
+  --golge-yakin: 0 1px 2px rgba(29, 29, 31, 0.06);
+  --golge-uzak: 0 10px 30px -12px rgba(29, 29, 31, 0.18);
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  /* BAŞLIK YAZI TİPİ ayrı: Segoe UI Variable'ın Display kesimi büyük puntoda
+     daha sıkı ve keskin çizilir (Apple'ın SF Display / SF Text ayrımının
+     Windows'taki karşılığı). Gövde metni Text kesiminde kalır — küçük puntoda
+     o daha açık ve okunur. */
+  --sans-baslik: "Segoe UI Variable Display", "Segoe UI Variable Text",
+                 "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+
+  /* ============ SIVI CAM DİZGESİ ============
+     Üç KATMAN var ve hepsinin işi ayrı:
+       cam-1  zemine yapışık şeritler (başlık, ayak)   — en az bulanıklık
+       cam-2  içerik yüzeyleri (baloncuk, kart)        — orta
+       cam-3  üste binen paneller (yardım, palet)      — en çok, en koyu
+     Cam ancak ARDINDA renk varsa cam gibi görünür; o rengi body::before
+     içindeki yavaş gezen ışık lekeleri veriyor. Bulanıklık tek başına
+     beyaz üstünde hiçbir şey yapmaz (denendi, düz beyaz kaldı). */
+  /* Dolgu oranı okunabilirlikle camlık arasındaki dengedir. 0,72'de
+     baloncuk düz beyaz görünüyordu (zemin rengi geçmiyordu); 0,64'te cam
+     hissi geliyor ve yazı kontrastı hâlâ AAA sınıfında (test_arayuz ölçüyor). */
+  --cam-1-dolgu: rgba(255, 255, 255, 0.58);
+  --cam-2-dolgu: rgba(255, 255, 255, 0.64);
+  --cam-3-dolgu: rgba(250, 250, 252, 0.86);
+  --cam-1-bulani: saturate(150%) blur(14px);
+  --cam-2-bulani: saturate(160%) blur(18px);
+  --cam-3-bulani: saturate(140%) blur(28px);
+  /* Kenar: cam kalınlığı hissi. Üst kenar ışığı yakalar, alt kenar gölgeler. */
+  --cam-kenar: rgba(255, 255, 255, 0.75);
+  --cam-kenar-alt: rgba(29, 29, 31, 0.09);
+  /* İç parlaklık: cam yüzeyin üst milimetresine düşen ışık.
+     inset gölge olarak veriliyor, ayrı öğe gerekmiyor. */
+  --cam-parlak: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --cam-derin: inset 0 -1px 0 rgba(29, 29, 31, 0.05);
+
+  /* ---- Gölge merdiveni: her biri ÜÇ katman ----
+     temas (keskin, yakın) + orta + ortam (geniş, yumuşak). Tek katmanlı
+     gölge yapıştırma gibi duruyor; üç katman nesneyi havaya kaldırıyor. */
+  --golge-1:
+    0 1px 1.5px rgba(29, 29, 31, 0.05),
+    0 2px 6px -2px rgba(29, 29, 31, 0.07);
+  --golge-2:
+    0 1px 2px rgba(29, 29, 31, 0.06),
+    0 4px 10px -3px rgba(29, 29, 31, 0.09),
+    0 12px 28px -12px rgba(29, 29, 31, 0.14);
+  --golge-3:
+    0 2px 4px rgba(29, 29, 31, 0.07),
+    0 10px 24px -6px rgba(29, 29, 31, 0.14),
+    0 32px 64px -24px rgba(29, 29, 31, 0.26);
+  /* Vurgu rengiyle ışıyan gölge: kendi ışığı olan yüzeyler için */
+  --golge-vurgu: 0 6px 18px -8px rgba(92, 110, 20, 0.45);
+
+  /* ---- Zemin ışıkları: camın kırdığı renk ---- */
+  --isik-1: rgba(92, 110, 20, 0.20);          /* zeytin */
+  --isik-2: rgba(217, 119, 6, 0.14);          /* kehribar */
+  --isik-3: rgba(96, 130, 180, 0.13);         /* soğuk denge */
+
+  /* ============ HAREKET ============
+     Yay (spring): sonunda hafif taşıp yerine oturur — dijital değil,
+     fiziksel hissettirir. Panel/geçiş için yumuşak, tıklama için çevik. */
+  --yay: cubic-bezier(0.34, 1.46, 0.42, 1);
+  --yay-yumusak: cubic-bezier(0.22, 1, 0.36, 1);
+  --sure-hizli: 140ms;
+  --sure: 220ms;
+  --sure-yavas: 380ms;
+
+  /* ============ TİPOGRAFİ ÖLÇEĞİ ============
+     Beş kademe yeter; daha fazlası hiyerarşiyi bulanıklaştırıyor. */
+  --yazi-xs: 9.5px;      /* saat, telemetri */
+  --yazi-s: 11px;        /* açıklama, alt satır */
+  --yazi-m: 12.5px;      /* gövde */
+  --yazi-l: 14px;        /* panel başlığı */
+  --yazi-xl: 17px;       /* ada modu, hızlı cevap */
+  --kalin: 600;
+  --cok-kalin: 680;
+
+  /* ============ YARIÇAP ÖLÇEĞİ ============
+     Dört kademe. En küçüğü Windows'un pencere köşesiyle (8 px) aynı: iç
+     köşeler pencerenin köşesinden daha KESKİN olmasın, yoksa uygulama
+     çerçeveye oturmuyor gibi durur. Apple'ın yaptığı da bu — iç yarıçaplar
+     dıştan içe doğru azalır, tersi olmaz. */
+  --yaricap-s: 8px;       /* çip, küçük düğme */
+  --yaricap-m: 12px;      /* alan, satır */
+  --yaricap-l: 18px;      /* baloncuk, kart */
+  --yaricap-xl: 22px;     /* üste binen panel */
+  --sik: -0.15px;        /* büyük yazıda harf aralığını sık tut */
+  --seyrek: 0.4px;       /* küçük büyük harfli etikette seyrek tut */
+}
+
+/* ================= Karanlık tema =================
+   body.gece gelince palet değişkenleri koyu değerlerle EZİLİR. Neden body:
+   açılışta ayarlar.json'daki renkler :root'a satır içi yazılıyor; satır içi
+   stil seçicilerden güçlü olduğu için gece değerlerini bir alt düzeyde
+   (body) tanımlıyoruz — böylece hem ayar renkleri hem gece modu çalışır. */
+body.gece {
+  --zemin: #16171a;
+  --yuzey: #1f2124;
+  --vurgu: #9db33a;              /* koyu zeminde zeytin açılır, okunur kalır */
+  --ikincil: #f0a33c;
+  /* Gecede yazı AÇILIR (koyu zemine karşı): kehribar zaten parlak, yazı
+     olarak da yeterli — açık temanın tersi yönde çalışıyor. */
+  --ikincil-yazi: #f5b761;
+  --metin: #edeef0;
+  /* Gece sönük tonu da ölçüldü; koyu cam üstünde eşiği geçmesi için açıldı */
+  --sonuk: #a8a9af;
+  --cizgi: rgba(255, 255, 255, 0.09);
+  --golge-yakin: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --golge-uzak: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+
+  /* ---- Cam, gecede ----
+     Koyu camda saydamlık AZALTILIR: aynı oranla yazı okunmuyor (yaşandı,
+     ada modunda beyaz üstüne beyaz çıkmıştı). Kenar ışığı ise ARTAR —
+     karanlıkta cam kalınlığını yalnızca o kenar çizgisi anlatıyor. */
+  --cam-1-dolgu: rgba(38, 40, 45, 0.66);
+  --cam-2-dolgu: rgba(41, 43, 48, 0.78);
+  --cam-3-dolgu: rgba(26, 27, 31, 0.90);
+  --cam-kenar: rgba(255, 255, 255, 0.13);
+  --cam-kenar-alt: rgba(0, 0, 0, 0.4);
+  --cam-parlak: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --cam-derin: inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+
+  --golge-1:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.45);
+  --golge-2:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 4px 10px -3px rgba(0, 0, 0, 0.5),
+    0 12px 28px -12px rgba(0, 0, 0, 0.6);
+  --golge-3:
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 10px 24px -6px rgba(0, 0, 0, 0.55),
+    0 32px 64px -24px rgba(0, 0, 0, 0.75);
+  --golge-vurgu: 0 6px 20px -8px rgba(157, 179, 58, 0.5);
+
+  /* Gecede ışık lekeleri daha canlı: koyu zemin onları yutuyor */
+  --isik-1: rgba(157, 179, 58, 0.22);
+  --isik-2: rgba(240, 163, 60, 0.16);
+  --isik-3: rgba(96, 130, 180, 0.18);
+}
+body.gece #grid { opacity: 0.07; filter: invert(1); }
+body.gece .balon.ben {
+  background: linear-gradient(160deg,
+              rgba(157, 179, 58, 0.24), rgba(157, 179, 58, 0.11) 62%,
+              rgba(157, 179, 58, 0.16));
+  border-color: rgba(157, 179, 58, 0.28);
+  box-shadow: var(--golge-1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.10),
+              0 4px 14px -8px rgba(0, 0, 0, 0.6);
+}
+body.gece #yardim { background: rgba(22, 23, 26, 0.97); }
+body.gece #palet { background: rgba(22, 23, 26, 0.97); }
+/* Tema geçişi göz almasın: renkler yumuşakça dönsün */
+html, body, #kabuk, header, footer, #giris, .balon, .oneri-cip, .palet-satir,
+#palet, #yardim, #durum, #baslik, #saat {
+  transition: background-color 0.45s ease, color 0.45s ease, border-color 0.45s ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--zemin);
+  font-family: var(--sans);
+  color: var(--metin);
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================= YAŞAYAN ZEMİN =================
+   Camın kırabileceği bir şey olmalı. Üç geniş ışık lekesi zeminde çok yavaş
+   geziyor (36 saniyelik tur); cam katmanlar üstünden geçtikçe renk hafifçe
+   kayıyor. Ayrı öğe YOK — body::before yetiyor, HTML'e dokunmuyoruz.
+   Lekeler çok soluk (0,13-0,22 alfa): amaç desen değil, DERİNLİK. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -25%;                       /* kenarlardan taşsın, köşe boşluğu olmasın */
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 32% at 22% 18%, var(--isik-1), transparent 70%),
+    radial-gradient(42% 34% at 82% 30%, var(--isik-2), transparent 72%),
+    radial-gradient(46% 38% at 50% 92%, var(--isik-3), transparent 74%);
+  animation: zemin-gez 36s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes zemin-gez {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-3%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(2%, -3%, 0) scale(1.02); }
+}
+
+/* Kalp/taç kipleri kendi zeminini kuruyor: ışık lekeleri onları kirletmesin */
+body.kalp::before, body.tac::before { opacity: 0.35; }
+
+#kabuk {
+  position: relative;
+  z-index: 1;                        /* ışık lekeleri kabuğun ALTINDA kalır */
+  width: 100%; height: 100%;
+  /* Windows'un köşe kavisiyle AYNI yarıçap: içerik kavisin içine taşıp
+     köşede sert bir kenar bırakmasın. DWM zaten kırpıyor ama kırpma kenarı
+     keskin oluyor; buradaki yarıçap geçişi yumuşatıyor. */
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= AÇILIŞ ANİMASYONU =================
+   Perasistan bir SAHNE halinde belirir: kabuk büyüyerek netleşir, üst şerit iner,
+   marka adı harfleri toplanarak yerine oturur, yazı çubuğu yükselir, en son
+   koloni yavaşça görünür. kullanıcı animasyonun UZUN sürmesini istedi.
+
+   TEK SÜRE, ORANLI GECİKMELER: bütün adımlar --acilis değişkeninin
+   KESİRLERİ olarak yazılı. Böylece süreyi tek yerden değiştirmek sahnenin
+   ritmini bozmuyor — ayarlar.json -> arayuz.acilis_animasyonu_sn değeri
+   pera.js tarafından bu değişkene yazılıyor.
+
+   pera.js sahne bitince .acildi sınıfını ekler ve animasyonlar bir daha
+   çalışmaz (tema değiştirince ya da mini moddan dönünce yeniden oynamasınlar). */
+:root { --acilis: 2.6s; }
+
+#kabuk {
+  animation: pera-gel calc(var(--acilis) * 0.44) var(--yay-yumusak) both;
+}
+@keyframes pera-gel {
+  from { transform: scale(0.93); opacity: 0; filter: blur(6px); }
+  60%  { filter: blur(0); }
+  to   { transform: scale(1);    opacity: 1; filter: blur(0); }
+}
+header {
+  animation: serit-in calc(var(--acilis) * 0.40) var(--yay)
+             calc(var(--acilis) * 0.06) both;
+}
+@keyframes serit-in {
+  from { transform: translateY(-18px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+/* Marka adı: harfler AÇIKTAN toplanarak yerine oturur. Uzun bir açılışı
+   "yavaş" değil "kasıtlı" gösteren şey bu tür bir ayrıntı. */
+#baslik {
+  animation: ad-topla calc(var(--acilis) * 0.52) var(--yay-yumusak)
+             calc(var(--acilis) * 0.12) both;
+}
+@keyframes ad-topla {
+  from { letter-spacing: 13px; opacity: 0; }
+  to   { letter-spacing: var(--baslik-aralik, 2.5px); opacity: 0.9; }
+}
+/* Durum rozeti şeritten sonra, kendi kabarcığıyla gelir */
+#durum {
+  animation: rozet-gel calc(var(--acilis) * 0.34) var(--yay)
+             calc(var(--acilis) * 0.22) both;
+}
+@keyframes rozet-gel {
+  from { transform: scale(0.8) translateX(-6px); opacity: 0; }
+  to   { transform: scale(1)   translateX(0);    opacity: 1; }
+}
+footer {
+  animation: cubuk-yuksel calc(var(--acilis) * 0.42) var(--yay)
+             calc(var(--acilis) * 0.16) both;
+}
+@keyframes cubuk-yuksel {
+  from { transform: translateY(22px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+/* Sohbet alanı: baloncuklar kendi animasyonuna sahip, burada yalnızca
+   kapsayıcı yumuşakça açılıyor ki ilk karşılama boşluğa düşmesin. */
+#log {
+  animation: sohbet-ac calc(var(--acilis) * 0.45) ease-out
+             calc(var(--acilis) * 0.30) both;
+}
+@keyframes sohbet-ac { from { opacity: 0; } to { opacity: 1; } }
+/* Koloni en son ve en yavaş: karıncalar "zaten oradaydı" hissi vermeli,
+   aniden fırlamamalı. Sahnenin sonuna kadar sürer. */
+#karincalar {
+  animation: koloni-belir calc(var(--acilis) * 0.72) ease-out
+             calc(var(--acilis) * 0.28) both;
+}
+@keyframes koloni-belir { from { opacity: 0; } to { opacity: 1; } }
+
+/* Açılış bittikten sonra animasyonlar kapanır. */
+body.acildi #kabuk, body.acildi header, body.acildi #baslik,
+body.acildi #durum, body.acildi footer, body.acildi #log,
+body.acildi #karincalar { animation: none; }
+
+/* ================= CAM YÜZEY SINIFLARI =================
+   Üç katmanın ortak davranışı burada; hangi öğe hangi katmanda olduğunu
+   bileşen kuralları söylüyor. backdrop-filter desteklenmezse (eski motor)
+   dolgu rengi zaten yeterince opak — yüzey kaybolmaz, sadece cam olmaz. */
+.cam-1, .cam-2, .cam-3 {
+  -webkit-backdrop-filter: var(--cam-1-bulani);
+          backdrop-filter: var(--cam-1-bulani);
+  background: var(--cam-1-dolgu);
+  border: 1px solid var(--cam-kenar);
+  box-shadow: var(--golge-1), var(--cam-parlak);
+}
+.cam-2 {
+  -webkit-backdrop-filter: var(--cam-2-bulani);
+          backdrop-filter: var(--cam-2-bulani);
+  background: var(--cam-2-dolgu);
+  box-shadow: var(--golge-2), var(--cam-parlak), var(--cam-derin);
+}
+.cam-3 {
+  -webkit-backdrop-filter: var(--cam-3-bulani);
+          backdrop-filter: var(--cam-3-bulani);
+  background: var(--cam-3-dolgu);
+  box-shadow: var(--golge-3), var(--cam-parlak);
+}
+
+/* ================= AZALTILMIŞ HAREKET =================
+   Windows'ta "animasyonları göster" kapalıysa hareket durur, tasarım kalır.
+   Bulanıklık ve gölge dokunulmaz: onlar hareket değil, KATMAN bilgisi. */
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ================= Kalp modu =================
+   body.kalp sınıfı gelince tüm uygulama yumuşakça kırmızıya döner.
+   Geçiş süreleri aşağıdaki elemanların kendi transition'larında. */
+html, body, header, footer, #durum,
+.balon, #baslik, #saat, #giris,
+#yardim-ac, #mini-dugme, #tam-ekran, #kapat-dugme, .tele-ad, .tele span, #istem {
+  transition: background-color 1.2s ease, color 1.2s ease,
+              border-color 1.2s ease, opacity 1.2s ease;
+}
+body.kalp, body.kalp #kabuk { background: #7f1120; }
+body.kalp header { border-bottom-color: rgba(255, 255, 255, 0.15); }
+body.kalp #durum { background: rgba(255, 255, 255, 0.14); color: #ffe4e6; }
+body.kalp #baslik { color: #ffffff; opacity: 1; }
+body.kalp #saat, body.kalp .tele-ad, body.kalp .tele-ayrac { color: rgba(255, 228, 230, 0.7); }
+body.kalp .tele span:last-child { color: #ffffff; }
+body.kalp #yardim-ac, body.kalp #mini-dugme,
+body.kalp #tam-ekran, body.kalp #kapat-dugme { color: rgba(255, 228, 230, 0.8); }
+body.kalp footer {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+body.kalp .balon.pera {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+body.kalp .balon.ben {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+body.kalp .balon.oneri { color: #ffe4e6; border-color: rgba(255, 255, 255, 0.35); }
+body.kalp .balon.not { color: #fecdd3; }
+body.kalp #giris { color: #ffffff; caret-color: #ffffff; }
+body.kalp #giris::placeholder { color: rgba(255, 228, 230, 0.6); }
+body.kalp #istem { color: #ffe4e6; }
+body.kalp #grid { opacity: 0.06; filter: invert(1); }
+
+/* ---- Taç modu (kullanıcı): parlayan altın saltanat ---- */
+body.tac, body.tac #kabuk { background: #f3b71e; }
+body.tac header { border-bottom-color: rgba(74, 51, 5, 0.2); }
+body.tac #durum { background: rgba(74, 51, 5, 0.12); color: #4a3305; }
+body.tac #baslik { color: #3b2a04; opacity: 1; text-shadow: 0 1px 0 rgba(255,255,255,0.4); }
+body.tac #saat, body.tac .tele-ad, body.tac .tele-ayrac { color: rgba(74, 51, 5, 0.65); }
+body.tac .tele span:last-child { color: #3b2a04; }
+body.tac #yardim-ac, body.tac #mini-dugme,
+body.tac #tam-ekran, body.tac #kapat-dugme { color: rgba(74, 51, 5, 0.7); }
+body.tac footer {
+  background: rgba(255, 255, 255, 0.38);
+  border-color: rgba(74, 51, 5, 0.15);
+}
+body.tac .balon.pera {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(74, 51, 5, 0.15);
+  color: #2c1f03;
+}
+body.tac .balon.ben {
+  background: rgba(74, 51, 5, 0.14);
+  border-color: rgba(74, 51, 5, 0.2);
+  color: #2c1f03;
+}
+body.tac .balon.oneri { color: #7a5606; border-color: rgba(74, 51, 5, 0.35); }
+body.tac .balon.not { color: #7a5606; }
+body.tac #giris { color: #2c1f03; caret-color: #4a3305; }
+body.tac #giris::placeholder { color: rgba(74, 51, 5, 0.55); }
+body.tac #istem { color: #4a3305; }
+body.tac #grid { opacity: 0.05; }
+
+/* Parıltı: altının üzerinde süzülen ışık şeridi — 'parlasın' kısmı bu.
+   Katman herkeste var ama görünmez; taç modunda belirip süzülmeye başlar. */
+#kabuk::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  background: linear-gradient(115deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.28) 45%,
+    rgba(255, 250, 220, 0.55) 50%,
+    rgba(255, 255, 255, 0.28) 55%,
+    transparent 68%);
+  background-size: 260% 260%;
+  background-position: 130% 0;
+}
+body.tac #kabuk::after {
+  opacity: 1;
+  animation: altin-parilti 3.4s linear infinite;
+}
+@keyframes altin-parilti {
+  from { background-position: 130% 0; }
+  to   { background-position: -130% 0; }
+}
+
+/* ================= Üst şerit ================= */
+/* Başlık şeridi: CAM. Karıncalar bu şeridin ARDINDAN geçiyor ve bulanık
+   görünüyor — seçilen yön ("sıvı cam + canlı koloni") tam bunu istiyordu.
+   Eskiden şerit saydamdı ve karıncalar simgelerin ÜSTÜNDE yürüyordu. */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Üç bölge: solda durum, ORTADA başlık, sağda simgeler. Başlık gerçekten
+     ortalanmalı; space-between ile ortadaki öğe yan kümelerin genişliğine
+     göre kayıyordu (soldaki rozet uzun, sağdaki küme kısa). Izgara ile
+     orta sütun her zaman tam ortada durur. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 11px 14px;
+  flex: 0 0 auto;
+  z-index: 6;                      /* karınca tuvalinin (2) üstünde */
+  cursor: default;
+  -webkit-backdrop-filter: var(--cam-1-bulani);
+          backdrop-filter: var(--cam-1-bulani);
+  background: var(--cam-1-dolgu);
+  /* ÜST KÖŞELER pencerenin köşesiyle aynı kavis. Eskiden şerit köşesiz
+     çiziliyordu ve yuvarlak pencerenin içinde köşesi kesik bir bant gibi
+     duruyordu (kullanıcı ekran görüntüsünde gösterdi). */
+  border-radius: 8px 8px 0 0;
+  /* Alt kenar TEK çizgi ama iki tonlu: içte ışık, dışta gölge. Sert bir
+     ayırıcı yerine camın kalınlığını anlatan bir geçiş. */
+  box-shadow:
+    inset 0 -1px 0 var(--cam-kenar-alt),
+    0 1px 0 var(--cam-kenar),
+    0 8px 20px -14px rgba(0, 0, 0, 0.5),
+    var(--cam-parlak);
+}
+/* Sol küme (durum rozeti) ve sağ küme aynı ızgara mantığıyla hizalanır */
+header > #durum { justify-self: start; }
+header > #baslik { justify-self: center; }
+header > #sag-kume { justify-self: end; }
+
+/* Durum rozeti: renkli nokta + etiket, duruma göre tonlanan hap */
+#durum {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* Rozet küçültüldü: 5/12 dolgu ve 10,5 punto ile üst barın yarısını
+     kaplıyordu. Şıklık burada AZ yer kaplamaktan geliyor. */
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: var(--kalin);
+  letter-spacing: 1.1px;
+  /* Kendi ışığı olan hap: içte parlaklık, dışta vurgu renginde soluk hale */
+  background: linear-gradient(180deg,
+              rgba(92, 110, 20, 0.14), rgba(92, 110, 20, 0.07));
+  border: 1px solid rgba(92, 110, 20, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+              0 1px 3px -1px rgba(92, 110, 20, 0.25);
+  color: var(--vurgu);
+  transition: background var(--sure) var(--yay-yumusak),
+              color var(--sure), box-shadow var(--sure);
+}
+body.gece #durum {
+  background: linear-gradient(180deg,
+              rgba(157, 179, 58, 0.22), rgba(157, 179, 58, 0.10));
+  border-color: rgba(157, 179, 58, 0.26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09),
+              0 1px 3px -1px rgba(0, 0, 0, 0.5);
+}
+#durum-nokta {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 0.2s;
+}
+#durum.dinliyor #durum-nokta,
+#durum.konusuyor #durum-nokta { animation: rozet-nabiz 1.1s ease-in-out infinite; }
+#durum.isleniyor {
+  background: rgba(217, 119, 6, 0.1);
+  color: var(--ikincil);
+}
+@keyframes rozet-nabiz {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.5); }
+}
+
+/* Başlık: 8 piksellik harf aralığı çok "teknoloji logosu" duruyordu; Apple
+   tipografisi güvenli ve SIKI yazar. 2,5 piksel aralık marka hissini
+   korurken kelimeyi bir bütün olarak okutuyor. */
+#baslik {
+  font-family: var(--sans-baslik);
+  font-size: 13px;
+  font-weight: var(--kalin);
+  letter-spacing: var(--baslik-aralik, 2.5px);
+  margin-left: 3px;
+  color: var(--metin);
+  opacity: 0.9;
+}
+/* Ad uzadı (PERASİSTAN): en dar pencerede (480 px) saatle çakışmasın diye
+   harf aralığı ve punto biraz kısılır. */
+@media (max-width: 540px) {
+  #baslik { --baslik-aralik: 1.5px; font-size: 12px; margin-left: 0; }
+  header #sag-kume { gap: 1px; }
+  header #saat { margin-right: 6px; }
+  #sag-kume > #yardim-ac, #sag-kume > #mini-dugme, #sag-kume > #tam-ekran,
+  #sag-kume > #kapat-dugme, #sag-kume > #sesli-dugme { width: 24px; }
+}
+
+/* Sağ küme: saat ve simgeler. Simgeler arası boşluk daraltıldı, saatle
+   simgeler arasına AYIRICI boşluk kondu — iki ayrı iş, bitişik durmasınlar. */
+#sag-kume { display: flex; align-items: center; gap: 3px; }
+#saat {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;   /* saat değişince yazı oynamasın */
+  color: var(--sonuk);
+  margin-right: 8px;
+  letter-spacing: -0.2px;
+}
+#yardim-ac, #mini-dugme, #tam-ekran, #kapat-dugme, #sesli-dugme {
+  color: var(--sonuk);
+  cursor: pointer;
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  transition: background var(--sure-hizli), color var(--sure-hizli),
+              transform var(--sure) var(--yay);
+}
+/* Simgelerin TAMAMI aynı çizgi kalınlığında ve rengi metinden alır:
+   üst bar tek elden çizilmiş gibi dursun. */
+#sag-kume svg {
+  width: 15px; height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#kapat-dugme svg { width: 14px; height: 14px; }
+/* Üstüne gelince simge hafifçe büyür (yay ile): dokunulabilir olduğunu
+   renk değişiminden daha net söylüyor. Basılınca geri çöker. */
+#yardim-ac:hover, #mini-dugme:hover, #tam-ekran:hover {
+  background: rgba(29, 29, 31, 0.07);
+  color: var(--metin);
+  transform: scale(1.12);
+}
+body.gece #yardim-ac:hover, body.gece #mini-dugme:hover,
+body.gece #tam-ekran:hover { background: rgba(255, 255, 255, 0.1); }
+#kapat-dugme:hover {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+  transform: scale(1.12);
+}
+#yardim-ac:active, #mini-dugme:active, #tam-ekran:active,
+#kapat-dugme:active { transform: scale(0.94); }
+
+/* ================= Arka plan dokusu ================= */
+/* Nokta ızgarası: fark edilir edilmez bir doku, ekrana derinlik verir */
+/* IZGARA KAPALI. Nokta dokusu cam dilinde gereksiz gürültü: derinliği artık
+   zemin ışıkları ve cam katmanları veriyor, noktalar camın altında desen
+   olarak görünüp yüzeyi kirletiyordu. Öğe HTML'de duruyor (kaldırınca
+   pera.js'teki tema kuralları kırılır); yalnızca görünmez. */
+#grid {
+  position: absolute; inset: 0;
+  display: none;
+  pointer-events: none;
+}
+#karincalar {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ---- Sürükleme bölgeleri ----
+   'app-region: drag' bu pencere motorunda işe yaramadı (denendi, ölçüldü),
+   bu yüzden sürükleme pera.js'teki mousedown + Kopru.surukle() ile yapılıyor.
+   Burada sadece imleci ayarlıyoruz: sürüklenebilir yerde taşıma imleci,
+   metin imleci değil. */
+header {
+  cursor: default;
+  user-select: none;             /* sürüklerken metin seçilmesin */
+}
+
+/* Not: eskiden başlıkla sohbet arasında bir <main> (karınca sahnesi) yer
+   kaplıyordu ve sohbet ekranın ortasından başlıyordu. kullanıcı sohbetin
+   BAŞLIK ÇİZGİSİNDEN başlamasını istedi; o boşluk kaldırıldı. Karıncalar
+   kaybolmadı — onların tuvali (#karincalar) pencerenin tamamını kaplayan
+   ayrı bir katman, baloncukların ARKASINDA dolaşmaya devam ediyor. */
+
+/* ================= Telemetri (yardım paneli içinde) =================
+   Ana ekrandan kaldırıldı: sohbet baloncukları bu satırın altına giriyor,
+   yarısı kesik görünüyordu. Artık yalnızca yardım panelinde. */
+#yardim-sistem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+.tele { display: inline-flex; gap: 6px; }
+.tele-ad { color: var(--sonuk); }
+.tele span:last-child { color: var(--metin); font-weight: 600; }
+.tele-ayrac { color: var(--sonuk); opacity: 0.5; }
+
+/* ================= Sohbet akışı (baloncuklar) =================
+   Mesajlaşma uygulaması düzeni: Perasistan solda, sen sağda. Kapsayıcı
+   saydamdır — kart görünümünü artık baloncukların kendisi taşır. */
+#log {
+  margin: 0 16px 10px;
+  padding: 6px 4px 2px;
+  display: flex; flex-direction: column;
+  gap: 6px;
+  /* Başlık çizgisinin altından yazı çubuğuna kadar TÜM alanı kaplar; pencere
+     kısaltılınca da küçülür ama yazı çubuğunu dışarı itmez (footer flex 0 0). */
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 60px;
+  overflow-y: auto;              /* geçmişe kaydırılabilir */
+  z-index: 3;
+}
+/* Kaydırma çubuğu: yalnızca imleç sohbetin üstündeyken belirir. Sürekli
+   görünen gri çubuk cam yüzeyin kenarını kirletiyordu (görüntüde yakalandı). */
+#log::-webkit-scrollbar { width: 5px; }
+#log::-webkit-scrollbar-track { background: transparent; }
+#log::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background var(--sure);
+}
+#log:hover::-webkit-scrollbar-thumb { background: rgba(134, 134, 139, 0.35); }
+#log:hover::-webkit-scrollbar-thumb:hover { background: rgba(134, 134, 139, 0.6); }
+/* Mesajlar alta yerleşsin (mesajlaşma uygulaması hissi). justify-content
+   yerine ilk çocuğa 'margin-top: auto': o yöntemde yukarı kaydırınca en
+   eski mesajlar kırpılıyor, bu yöntemde kaydırma sağlam çalışır. */
+/* Konuşma ÜSTTEN başlar: sohbet artık başlık çizgisinin hemen altından
+   başlıyor, ilk mesaj da orada duruyor (eskiden alta yapışıktı ve üstte kocaman
+   boşluk kalıyordu). Alan dolunca aşağı doğru büyür, taşınca kaydırılır. */
+/* YARIM BALONCUK YOK: üst kenardan taşan baloncuk hiç gösterilmez.
+   Önce solma (mask-image) denendi — baloncuğun yarısı hayalet gibi kalıyordu,
+   kullanıcı "yarıda kesilmesin" dedi. Şimdi pera.js kesilen baloncuğa .kirpik
+   sınıfını veriyor, o da tamamen görünmez oluyor: ya tam görünür ya hiç. */
+.balon.kirpik { visibility: hidden; }
+
+.balon {
+  /* Genişlik hem oranla hem PİKSELLE sınırlı: pencere genişleyince satırlar
+     uzayıp okunmaz hale gelmesin. Rahat okuma ölçüsü ~60-70 karakter;
+     460 piksel bu punto için tam oraya denk geliyor. */
+  max-width: min(82%, 460px);
+  padding: 9px 14px;
+  font-family: var(--sans);
+  font-size: var(--yazi-m);
+  line-height: 1.5;
+  white-space: normal;           /* uzun cevaplar alt satıra iner, kesilmez */
+  overflow-wrap: break-word;
+  /* YAY: baloncuk yerine oturmadan önce bir tık taşar. Düz ease-out
+     "kayıyor" hissi veriyordu; yay "geliyor ve oturuyor" hissi veriyor. */
+  animation: balon-gel var(--sure) var(--yay) both;
+}
+/* İçerik YÜKSELEREK gelir: baloncuk yerine otururken yazı biraz gecikip
+   arkasından yetişiyor. İki ayrı süre olması hareketi katmanlı kılıyor. */
+.balon > .b-metin { animation: icerik-yukse 0.3s var(--yay-yumusak) both; }
+@keyframes balon-gel {
+  from { transform: translateY(8px) scale(0.965); opacity: 0; }
+  to   { transform: translateY(0)   scale(1);     opacity: 1; }
+}
+@keyframes icerik-yukse {
+  from { transform: translateY(4px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+/* Perasistan: solda, CAM yüzey, sol alt köşesi kırpık (konuşma kuyruğu).
+   Karıncalar ve zemin ışıkları baloncuğun ARDINDAN bulanık geçiyor. */
+.balon.pera {
+  align-self: flex-start;
+  -webkit-backdrop-filter: var(--cam-2-bulani);
+          backdrop-filter: var(--cam-2-bulani);
+  background: var(--cam-2-dolgu);
+  color: var(--metin);
+  border: 1px solid var(--cam-kenar);
+  border-radius: var(--yaricap-l) var(--yaricap-l) var(--yaricap-l) 6px;
+  box-shadow: var(--golge-2), var(--cam-parlak), var(--cam-derin);
+}
+/* Sen: sağda, İÇİNDEN AYDINLANAN zeytin camı. Üstten alta açılan gradyan
+   ışığın yüzeye yukarıdan düştüğünü söylüyor; düz dolgu yamalı duruyordu. */
+.balon.ben {
+  align-self: flex-end;
+  -webkit-backdrop-filter: var(--cam-2-bulani);
+          backdrop-filter: var(--cam-2-bulani);
+  background: linear-gradient(160deg,
+              rgba(92, 110, 20, 0.20), rgba(92, 110, 20, 0.10) 62%,
+              rgba(92, 110, 20, 0.14));
+  color: var(--metin);
+  border: 1px solid rgba(92, 110, 20, 0.22);
+  border-radius: var(--yaricap-l) var(--yaricap-l) 6px var(--yaricap-l);
+  box-shadow: var(--golge-1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.55),
+              0 4px 14px -8px rgba(92, 110, 20, 0.4);
+}
+/* Öneri: Perasistan tarafında ama tıklanabilir olduğu belli olsun */
+.balon.oneri {
+  align-self: flex-start;
+  background: transparent;
+  color: var(--ikincil-yazi);        /* yazı: koyu kehribar (kontrast 4,8:1) */
+  border: 1px dashed rgba(92, 110, 20, 0.4);
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.balon.oneri:hover { background: rgba(92, 110, 20, 0.07); }
+/* ---- Baloncuk içi: metin, saat, kopyala düğmesi, katlama ---- */
+.balon { position: relative; }
+.b-metin { display: block; }
+
+/* ---- ZENGİN CEVAP: satır türleri (zengin.js kuruyor) ----
+   Eskiden bütün cevap tek parça metindi ve `white-space: normal` yüzünden
+   SATIR SONLARI YOK SAYILIYORDU: brifing, belge arama sonucu, uyumluluk
+   denetimi tek paragrafa yığılıyordu. Artık her satır kendi öğesinde,
+   yani satır sonu CSS'in keyfine değil YAPIYA bağlı. */
+/* NOT: burada '.b-metin > div { display: block }' gibi bir kural OLMAMALI.
+   Vardı ve özgüllüğü (0,1,1) '.s-madde' (0,1,0) kuralını eziyordu: madde
+   ızgarası çalışmıyor, numara metne yapışıyordu (görüntüde yakalandı). */
+.s-satir { margin: 0; }
+.s-satir + .s-satir { margin-top: 2px; }
+.s-ara { height: 7px; }                 /* boş satır = nefes payı */
+
+/* Başlık: "2 senaryo var:" — listenin üstünde durur */
+.s-baslik {
+  font-weight: 620;
+  letter-spacing: -0.1px;
+  color: var(--metin);
+  margin-bottom: 3px;
+}
+.s-satir + .s-baslik, .s-madde + .s-baslik { margin-top: 7px; }
+
+/* Madde: im/numara solda ayrı sütunda — uzun madde alt satıra inince
+   gövde hizası bozulmaz (asılı girinti). */
+.s-madde {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 0 5px;
+  align-items: baseline;
+  margin-top: 2px;
+}
+.s-im {
+  color: var(--vurgu);
+  font-size: 10px;
+  line-height: 1.7;
+  text-align: center;
+}
+.s-no {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--vurgu);
+  text-align: right;
+  opacity: 0.85;
+}
+.s-govde { min-width: 0; }              /* uzun kelime taşırmasın */
+/* Maddenin adı ile açıklaması: ad koyu, açıklama sönük ve alt satırda.
+   Böylece 20 başlıklı liste göz gezdirilerek taranabiliyor. */
+.s-ad { font-weight: 600; }
+.s-aciklama {
+  display: block;
+  color: var(--sonuk);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+/* Alt satır: maddenin altındaki alıntı/örnek — sönük ve içeri çekik */
+.s-alt {
+  margin-left: 19px;
+  padding-left: 7px;
+  border-left: 1.5px solid var(--cizgi);
+  color: var(--sonuk);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+/* Durum satırı: ✅ / ⚠️ / ❌ — simge sütunda, renk anlamı taşır */
+.s-durum {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 0 5px;
+  align-items: baseline;
+  margin-top: 2px;
+}
+.s-durum .s-im { font-size: 10.5px; }
+.s-durum.iyi   .s-im { color: var(--vurgu); }
+.s-durum.uyari .s-im { color: var(--ikincil); }
+.s-durum.kotu  .s-im { color: #d14343; }
+.s-durum.uyari .s-govde { color: var(--metin); }
+
+/* Satır içi vurgular */
+.s-anahtar { color: var(--sonuk); }     /* "Dosya: " gibi etiket */
+.i-tutar {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+.i-saat {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+}
+.i-yer {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(92, 110, 20, 0.1);
+  color: var(--vurgu);
+  white-space: nowrap;
+}
+/* Dosya adı BİRİNCİL bilgidir: koyu ve mono, yani en okunur hâlde.
+   Turuncu (--ikincil) yalnızca yol/adres gibi daha seyrek şeylere ayrıldı;
+   üç ardışık turuncu satır listeye baskın geliyordu (görüntüde yakalandı). */
+.i-dosya {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--metin);
+  overflow-wrap: anywhere;
+}
+.i-yol {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ikincil-yazi);
+  overflow-wrap: anywhere;             /* uzun yol baloncuğu taşırmasın */
+}
+body.gece .i-yer { background: rgba(157, 179, 58, 0.16); }
+/* Saat: kendi satırını YEMEZ. Eskiden tam satır boyunda blok'tu ve her
+   baloncuk 8 piksel boy kaybediyordu; küçük ekranda bu 4-5 satır ediyor.
+   line-height 1 + küçük punto ile aynı bilgi yarı yerde duruyor. */
+.b-saat {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1;
+  color: var(--sonuk);
+  opacity: 0.7;
+  text-align: right;
+  letter-spacing: 0.2px;
+}
+/* Aynı taraftan gelen ardışık mesajlar birbirine yaklaşır: grup hissi */
+.balon.pera + .balon.pera, .balon.ben + .balon.ben { margin-top: -3px; }
+
+.b-kopya {
+  position: absolute;
+  top: -8px; right: -6px;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi);
+  box-shadow: var(--golge-yakin);
+  font-size: 11px;
+  color: var(--ikincil);
+  cursor: pointer;
+  opacity: 0;                      /* yalnızca üstüne gelince belirir */
+  transform: scale(0.85);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.balon.pera:hover .b-kopya { opacity: 1; transform: scale(1); }
+.b-kopya:hover { border-color: rgba(217, 119, 6, 0.5); }
+
+/* Uzun cevap katlama: yaklaşık yedi satır gösterip gerisini isteğe bırakır.
+   NEDEN line-clamp DEĞİL: -webkit-line-clamp yalnızca tek metin akışında
+   çalışıyor; zengin cevapta her satır kendi öğesinde olduğu için kırpmıyordu.
+   max-height + maske hem çalışıyor hem "devamı var" duygusunu veriyor. */
+.balon.katli .b-metin {
+  max-height: 10.4em;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 76%, transparent 100%);
+          mask-image: linear-gradient(180deg, #000 76%, transparent 100%);
+}
+.balon.katli.acik .b-metin {
+  max-height: none;
+  overflow: visible;
+  -webkit-mask-image: none;
+          mask-image: none;
+}
+.b-katla {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ikincil-yazi);
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(217, 119, 6, 0.45);
+}
+.b-katla:hover { color: var(--vurgu); border-bottom-color: rgba(92, 110, 20, 0.5); }
+
+/* "Yazıyor" baloncuğu: üç nokta sırayla zıplar */
+.balon.yaziyor {
+  align-self: flex-start;
+  display: flex; align-items: center; gap: 4px;
+  padding: 10px 14px;
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi);
+  border-radius: 14px 14px 14px 4px;
+  box-shadow: var(--golge-yakin);
+}
+.balon.yaziyor i {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--sonuk);
+  animation: nokta-zipla 1.1s ease-in-out infinite;
+}
+.balon.yaziyor i:nth-child(2) { animation-delay: 0.16s; }
+.balon.yaziyor i:nth-child(3) { animation-delay: 0.32s; }
+@keyframes nokta-zipla {
+  0%, 70%, 100% { transform: translateY(0);     opacity: 0.45; }
+  35%           { transform: translateY(-4px);  opacity: 1; }
+}
+
+/* Sistem notu: kimseye ait değil — ortada, küçük ve sönük */
+.balon.not {
+  align-self: center;
+  max-width: 92%;
+  padding: 3px 10px;
+  font-size: 10.5px;
+  color: var(--sonuk);
+  text-align: center;
+  background: transparent;
+}
+
+/* Tıklanabilir seçenek düğmeleri (ör. "hangi Ayşe?") */
+.secenek-kutu {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 4px 0 2px;
+}
+.secenek {
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(92, 110, 20, 0.35);
+  background: rgba(92, 110, 20, 0.07);
+  color: var(--vurgu);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.secenek:hover { background: rgba(92, 110, 20, 0.16); }
+.secenek:active { transform: scale(0.97); }
+.secenek.solgun { opacity: 0.4; pointer-events: none; }
+
+/* ================= Sesli mod =================
+   Yapay zekâ asistanlarındaki sesli sohbetin karşılığı: açıkken yazı
+   çubuğunun üstünde bir şerit durur, mikrofon düzeyi çubuklarla akar.
+   Amaç: "şu an beni dinliyor mu, sıra kimde" sorusunu bakışta cevaplamak. */
+/* Sesli mod açıkken mikrofon vurgu rengine döner ve arkasında hale olur.
+   text-shadow SVG'de işlemiyor (yazı değil çizim); filter: drop-shadow
+   SVG'nin kendisini ışıtıyor. */
+#sesli-dugme.acik {
+  color: var(--vurgu);
+  background: rgba(92, 110, 20, 0.14);
+  filter: drop-shadow(0 0 6px rgba(92, 110, 20, 0.55));
+}
+body.gece #sesli-dugme.acik {
+  background: rgba(157, 179, 58, 0.16);
+  filter: drop-shadow(0 0 7px rgba(157, 179, 58, 0.6));
+}
+
+#sesli-serit {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px 8px;
+  padding: 7px 14px;
+  flex: 0 0 auto;
+  z-index: 6;                     /* karıncalar şeridin ardından geçer */
+  -webkit-backdrop-filter: var(--cam-2-bulani);
+          backdrop-filter: var(--cam-2-bulani);
+  background: var(--cam-2-dolgu);
+  border: 1px solid rgba(92, 110, 20, 0.35);
+  border-radius: 999px;
+  /* Dinlerken kendi ışığı olan şerit: vurgu renginde hale, cam parlaklığı */
+  box-shadow: var(--golge-2), var(--cam-parlak), var(--golge-vurgu);
+  font-size: var(--yazi-m);
+  color: var(--metin);
+}
+body.gece #sesli-serit { border-color: rgba(157, 179, 58, 0.4); }
+body.sesli #sesli-serit {
+  display: flex;
+  animation: serit-gel var(--sure) var(--yay) both;
+}
+@keyframes serit-gel {
+  from { transform: translateY(10px) scale(0.97); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+#sesli-nokta {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--vurgu);
+  box-shadow: 0 0 6px rgba(92, 110, 20, 0.5);
+  flex-shrink: 0;
+  animation: rozet-nabiz 1.2s ease-in-out infinite;
+}
+#sesli-durum { font-weight: 600; white-space: nowrap; }
+/* Canlı düzey çubukları: yükseklik --ses değişkeninden gelir, her çubuğun
+   kendi gecikmesi var — dalga gibi akar. */
+#sesli-cubuklar { display: flex; align-items: center; gap: 2px; flex: 1; height: 16px; }
+#sesli-cubuklar i {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 2px;
+  background: var(--vurgu);
+  opacity: 0.55;
+  height: calc(3px + var(--ses, 0) * 13px);
+  transition: height 0.09s linear;
+}
+#sesli-cubuklar i:nth-child(odd) { height: calc(3px + var(--ses, 0) * 9px); }
+#sesli-cubuklar i:nth-child(3n) { height: calc(2px + var(--ses, 0) * 16px); }
+#sesli-bitir {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ikincil-yazi); cursor: pointer;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  border-radius: 6px; padding: 2px 6px;
+  flex-shrink: 0;
+}
+#sesli-bitir:hover { background: rgba(217, 119, 6, 0.1); }
+
+/* "sus" düğmesi: yalnızca Perasistan KONUŞURKEN görünür — boşken tıklanacak bir şey
+   yok ve şeridi kalabalıklaştırmasın. */
+#sesli-sus {
+  display: none;
+  font-family: var(--mono); font-size: 10px;
+  color: var(--vurgu); cursor: pointer;
+  border: 1px solid rgba(92, 110, 20, 0.35);
+  border-radius: 6px; padding: 2px 6px;
+  flex-shrink: 0;
+}
+#sesli-sus:hover { background: rgba(92, 110, 20, 0.12); }
+body.konusuyor #sesli-sus { display: inline-block; }
+/* Perasistan konuşurken sıra onda: şerit bunu söyler */
+body.sesli.konusuyor #sesli-nokta { background: var(--ikincil); }
+body.sesli.konusuyor #sesli-cubuklar i { background: var(--ikincil); }
+
+/* ================= Bildirim kartı =================
+   Hatırlatıcı çaldığında üstte belirir. Mini moddayken sohbet görünmediği
+   için kart orada da görünür kalır — hatırlatma kaçmasın. */
+#bildirim {
+  display: none;
+  position: absolute;
+  top: 10px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 14;
+  max-width: calc(100% - 40px);
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  /* Bildirim ÜSTE BİNEN bir kart: en yüksek katman camı (cam-3) ve en derin
+     gölge. Hatırlatıcı çaldığında arkasındaki her şeyden ayrılmalı. */
+  -webkit-backdrop-filter: var(--cam-3-bulani);
+          backdrop-filter: var(--cam-3-bulani);
+  background: var(--cam-3-dolgu);
+  border: 1px solid rgba(217, 119, 6, 0.45);
+  border-left: 3px solid var(--ikincil);
+  border-radius: var(--yaricap-m);
+  box-shadow: var(--golge-3), var(--cam-parlak);
+  font-size: var(--yazi-m);
+  color: var(--metin);
+}
+#bildirim.acik {
+  display: flex;
+  animation: bildirim-gel var(--sure-yavas) var(--yay) both;
+}
+@keyframes bildirim-gel {
+  from { transform: translate(-50%, -18px) scale(0.96); opacity: 0; }
+  to   { transform: translate(-50%, 0)     scale(1);    opacity: 1; }
+}
+#bildirim-metin { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#bildirim-kapat { color: var(--sonuk); cursor: pointer; font-size: 11px; }
+#bildirim-kapat:hover { color: var(--ikincil-yazi); }
+
+/* ================= Durum ışığı (pencere kenarı) =================
+   Rozet zaten durumu yazıyor ama insan kenardaki ışığı gözünün ucuyla görür.
+   Dinlerken nefes alan yeşil, işlerken akan amber, konuşurken sesin
+   genliğiyle nefes alan çizgi. Beklerken tamamen görünmez. */
+#kenar-isik {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 11;
+  /* KÖŞE: Windows 11'in DWMWCP_ROUND yarıçapı 8 piksel. Işık da TAM 8
+     pikselle çiziliyor, yani sistemin kavisiyle örtüşüyor.
+     GEÇMİŞ: bir süre 16 pikseldi, uyuşmuyordu; sonra düz (0) yapıldı ve
+     pencere köşeleri de düzleştirildi. kullanıcı pencerenin keskin durmasını
+     beğenmedi — doğru çözüm ışığı sistemin yarıçapına EŞİTLEMEK. */
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  --isik: var(--vurgu);
+  box-shadow: inset 0 0 0 1.5px var(--isik),
+              inset 0 0 14px -2px var(--isik);
+}
+body.dinliyor #kenar-isik {
+  opacity: 0.75;
+  --isik: var(--vurgu);
+  animation: isik-nefes 2.4s ease-in-out infinite;
+}
+body.isleniyor #kenar-isik {
+  opacity: 0.7;
+  --isik: var(--ikincil);
+  animation: isik-akis 1.6s linear infinite;
+}
+/* Konuşurken: genlik JS'ten --ses değişkeniyle gelir (0-1) */
+body.konusuyor #kenar-isik {
+  --isik: var(--vurgu);
+  opacity: calc(0.35 + var(--ses, 0) * 0.55);
+  box-shadow: inset 0 0 0 calc(1.2px + var(--ses, 0) * 1.8px) var(--isik),
+              inset 0 0 calc(10px + var(--ses, 0) * 26px) -2px var(--isik);
+}
+@keyframes isik-nefes {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.85; }
+}
+@keyframes isik-akis {
+  0%   { box-shadow: inset 0 0 0 1.5px var(--isik), inset 0 0 10px -3px var(--isik); }
+  50%  { box-shadow: inset 0 0 0 2.2px var(--isik), inset 0 0 22px -2px var(--isik); }
+  100% { box-shadow: inset 0 0 0 1.5px var(--isik), inset 0 0 10px -3px var(--isik); }
+}
+
+/* ================= Komut keşfi =================
+   Perasistan'da 109 komut var ama hiçbiri görünmüyordu; insan bildiğini yazıp
+   gerisini kullanmıyor. İki keşif yolu: yazarken çıkan öneri şeridi ve
+   Ctrl+K komut paleti. Üçüncüsü: boş ekranda en sık kullanılan komut çipleri. */
+#oneri-serit {
+  display: none;                  /* eşleşme varken JS 'flex' yapar */
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 20px 8px;
+  flex: 0 0 auto;
+  z-index: 4;
+}
+.oneri-cip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  max-width: 100%;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cizgi);
+  background: var(--yuzey);
+  box-shadow: var(--golge-yakin);
+  cursor: pointer;
+  font-size: 12px;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.oneri-cip:hover { border-color: rgba(92, 110, 20, 0.5); }
+.oneri-cip:active { transform: scale(0.97); }
+.oneri-cip.secili { border-color: var(--vurgu); background: rgba(92, 110, 20, 0.08); }
+.oneri-cip .o-ad { color: var(--metin); font-weight: 600; white-space: nowrap; }
+.oneri-cip .o-detay {
+  color: var(--sonuk);
+  font-size: 11px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.oneri-cip .o-tab {
+  font-family: var(--mono); font-size: 9.5px;
+  color: var(--vurgu); opacity: 0.75;
+  border: 1px solid rgba(92, 110, 20, 0.3);
+  border-radius: 4px; padding: 0 3px;
+}
+
+/* Komut paleti: pencereyi kaplayan arama katmanı */
+#palet {
+  display: none;
+  position: absolute;
+  top: 46px; left: 16px; right: 16px; bottom: 16px;
+  z-index: 12;
+  /* Üste binen panel = cam-3: en çok bulanıklık, en opak dolgu. Arkasındaki
+     sohbet okunmasın ama tamamen kaybolmasın — derinlik hissi kalsın. */
+  -webkit-backdrop-filter: var(--cam-3-bulani);
+          backdrop-filter: var(--cam-3-bulani);
+  background: var(--cam-3-dolgu);
+  border: 1px solid var(--cam-kenar);
+  border-radius: var(--yaricap-xl);
+  box-shadow: var(--golge-3), var(--cam-parlak);
+  padding: 12px 14px 10px;
+  flex-direction: column;
+}
+#palet.acik { display: flex; animation: palet-gel var(--sure) var(--yay) both; }
+@keyframes palet-gel {
+  from { transform: translateY(-10px) scale(0.975); opacity: 0; }
+  to   { transform: translateY(0)     scale(1);     opacity: 1; }
+}
+#palet-arama {
+  flex: 0 0 auto;
+  /* Panel içindeki alan camın İÇİNE oyulmuş gibi: dolgu değil, iç gölge */
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--cam-kenar-alt);
+  box-shadow: inset 0 1px 3px rgba(29, 29, 31, 0.06);
+  border-radius: var(--yaricap-m);
+  outline: none;
+  padding: 9px 12px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--metin);
+  caret-color: var(--vurgu);
+  transition: border-color var(--sure) var(--yay-yumusak),
+              box-shadow var(--sure) var(--yay-yumusak);
+}
+body.gece #palet-arama {
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+#palet-arama:focus {
+  border-color: rgba(92, 110, 20, 0.45);
+  box-shadow: inset 0 1px 3px rgba(29, 29, 31, 0.06),
+              0 0 0 3px rgba(92, 110, 20, 0.12);
+}
+#palet-liste {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  margin: 8px 0 6px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+#palet-liste::-webkit-scrollbar { width: 4px; }
+#palet-liste::-webkit-scrollbar-thumb { background: rgba(134,134,139,0.4); border-radius: 2px; }
+.palet-satir {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background var(--sure-hizli),
+              transform var(--sure) var(--yay);
+}
+.palet-satir:hover { background: rgba(92, 110, 20, 0.07); }
+/* Seçili satır bir tık SAĞA kayar: klavyeyle gezinirken göz onu takip eder,
+   yalnızca renk değişimi küçük listede fark edilmiyordu. */
+.palet-satir.secili {
+  background: rgba(92, 110, 20, 0.13);
+  transform: translateX(3px);
+  box-shadow: inset 2px 0 0 var(--vurgu);
+}
+body.gece .palet-satir:hover { background: rgba(157, 179, 58, 0.1); }
+body.gece .palet-satir.secili { background: rgba(157, 179, 58, 0.17); }
+.palet-satir .p-ad {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  color: var(--metin); white-space: nowrap;
+}
+.palet-satir .p-detay {
+  font-size: 11.5px; color: var(--sonuk);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#palet-ipucu {
+  flex: 0 0 auto;
+  font-family: var(--mono); font-size: 9.5px;
+  color: var(--sonuk); text-align: center; letter-spacing: 0.3px;
+}
+
+/* ================= Arka plan işi şeridi =================
+   Uzun bir iş sürerken yazı çubuğunun ÜSTÜNDE belirir. Sesli şeritle aynı
+   yerde durur ama ikisi bir arada da görünebilir (sesli sohbet sırasında
+   arkada indeks taranabilir). Cam-2 katmanı: içerik yüzeyi. */
+#is-serit {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px 8px;
+  padding: 7px 14px;
+  flex: 0 0 auto;
+  z-index: 6;
+  -webkit-backdrop-filter: var(--cam-2-bulani);
+          backdrop-filter: var(--cam-2-bulani);
+  background: var(--cam-2-dolgu);
+  border: 1px solid rgba(217, 119, 6, 0.32);
+  border-radius: 999px;
+  box-shadow: var(--golge-2), var(--cam-parlak);
+  font-size: var(--yazi-s);
+  color: var(--metin);
+}
+body.is-var #is-serit {
+  display: flex;
+  animation: serit-gel var(--sure) var(--yay) both;
+}
+#is-ad {
+  font-weight: var(--kalin);
+  white-space: nowrap;
+  max-width: 40%;
+  overflow: hidden; text-overflow: ellipsis;
+}
+/* İlerleme çubuğu: dolgu genişliği yüzde ile sürülüyor, geçişi yumuşak.
+   Belirsiz iş (oran bilinmiyor) için ayrı bir kip var — durmuş gibi
+   görünmesin diye içinde ışık gezer. */
+#is-cubuk {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(217, 119, 6, 0.16);
+  overflow: hidden;
+  min-width: 40px;
+}
+#is-dolgu {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  background: var(--ikincil);
+  transition: width var(--sure) var(--yay-yumusak);
+}
+#is-serit.belirsiz #is-dolgu {
+  width: 35%;
+  animation: is-gez 1.4s ease-in-out infinite;
+}
+@keyframes is-gez {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(340%); }
+}
+#is-yuzde {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--yazi-xs);
+  color: var(--sonuk);
+  min-width: 30px;
+  text-align: right;
+}
+#is-fazla {
+  font-size: var(--yazi-xs);
+  color: var(--sonuk);
+  white-space: nowrap;
+}
+#is-iptal {
+  cursor: pointer;
+  color: var(--sonuk);
+  font-size: 11px;
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  transition: background var(--sure-hizli), color var(--sure-hizli);
+}
+#is-iptal:hover { background: rgba(220, 38, 38, 0.14); color: #dc2626; }
+
+/* ================= Yazı çubuğu ================= */
+footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px 16px;
+  padding: 12px 18px;
+  flex: 0 0 auto;                /* yazı çubuğu asla büzülmez */
+  z-index: 6;                    /* karıncalar çubuğun ARDINDAN geçer */
+  -webkit-backdrop-filter: var(--cam-2-bulani);
+          backdrop-filter: var(--cam-2-bulani);
+  background: var(--cam-2-dolgu);
+  border: 1px solid var(--cam-kenar);
+  border-radius: 999px;
+  box-shadow: var(--golge-2), var(--cam-parlak), var(--cam-derin);
+  transition: border-color var(--sure) var(--yay-yumusak),
+              box-shadow var(--sure) var(--yay-yumusak),
+              transform var(--sure) var(--yay);
+}
+#istem {
+  color: var(--vurgu);
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+}
+#giris {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--metin);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  caret-color: var(--vurgu);
+}
+#giris::placeholder { color: var(--sonuk); opacity: 0.75; }
+/* Kilitli: Perasistan konuşurken/işlerken yazılamaz. kullanıcı "peranın konuşması
+   bitmeden bişey yazılmasın" dedi — yarıda kesilen bir cevabın üstüne komut
+   yazmak hem sırayı bozuyor hem sesli cevap devam ederken kafa karıştırıyor. */
+#giris:disabled {
+  cursor: not-allowed;
+  color: var(--sonuk);
+}
+#giris:disabled::placeholder { opacity: 0.55; }
+
+/* ---- Gönder / durdur düğmesi ---- */
+#gonder {
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(92, 110, 20, 0.14);
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--sure-hizli),
+              transform var(--sure) var(--yay),
+              opacity var(--sure-hizli);
+}
+/* Boşken sönük ve tıklanamaz: gönderilecek bir şey yok */
+#gonder:disabled { opacity: 0.35; cursor: default; }
+#gonder:not(:disabled):hover { background: rgba(92, 110, 20, 0.24); transform: scale(1.08); }
+#gonder:not(:disabled):active { transform: scale(0.92); }
+body.gece #gonder { background: rgba(157, 179, 58, 0.16); }
+body.gece #gonder:not(:disabled):hover { background: rgba(157, 179, 58, 0.28); }
+
+/* Gönder oku: satır içi SVG. Kenarlıkla çizilen ok hizalanmıyordu
+   (çevron gövdeden kayıyordu, görüntüde yakalandı). */
+#gonder-ok {
+  width: 17px; height: 17px;
+  fill: none;
+  stroke: var(--vurgu);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Durdur karesi: normalde yok, çalışırken görünür */
+#gonder-kare {
+  display: none;
+  width: 17px; height: 17px;
+  fill: var(--ikincil);
+  stroke: none;
+}
+/* ÇALIŞIRKEN/KONUŞURKEN: ok gider, kare gelir, düğme kehribar hale alır.
+   Böylece aynı yerde duran düğme "şimdi durdurabilirsin" der. */
+body.isleniyor #gonder, body.konusuyor #gonder {
+  background: rgba(217, 119, 6, 0.16);
+}
+body.isleniyor #gonder-ok, body.konusuyor #gonder-ok { display: none; }
+body.isleniyor #gonder-kare, body.konusuyor #gonder-kare { display: block; }
+body.isleniyor #gonder:not(:disabled):hover,
+body.konusuyor #gonder:not(:disabled):hover { background: rgba(217, 119, 6, 0.3); }
+/* Konuşurken kare hafifçe nefes alır: hâlâ sürüyor demektir */
+body.konusuyor #gonder-kare { animation: kare-nefes 1.4s ease-in-out infinite; }
+@keyframes kare-nefes {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+/* Odakta: çubuk 1 piksel YÜKSELİR ve vurgu renginde hale kazanır. Yükselme
+   çok küçük ama "şimdi seni dinliyorum" hissini gölgeden daha iyi veriyor. */
+footer:focus-within {
+  border-color: rgba(92, 110, 20, 0.45);
+  transform: translateY(-1px);
+  box-shadow: var(--golge-2), var(--cam-parlak),
+              0 0 0 3px rgba(92, 110, 20, 0.12),
+              var(--golge-vurgu);
+}
+body.gece footer:focus-within {
+  border-color: rgba(157, 179, 58, 0.5);
+  box-shadow: var(--golge-2), var(--cam-parlak),
+              0 0 0 3px rgba(157, 179, 58, 0.14),
+              var(--golge-vurgu);
+}
+
+/* ================= Yardım paneli ================= */
+/* Açılışta yumuşak belirme: display none/block anında geçiş yapar, o yüzden
+   geçiş yerine kısa bir animasyon kullanıyoruz (palet ile aynı yöntem). */
+#yardim.acik { display: block; animation: palet-gel var(--sure) var(--yay) both; }
+#yardim {
+  display: none;
+  position: absolute; inset: 0;
+  -webkit-backdrop-filter: var(--cam-3-bulani);
+          backdrop-filter: var(--cam-3-bulani);
+  background: var(--cam-3-dolgu);
+  z-index: 10;
+  padding: 20px 24px;
+  overflow-y: auto;
+  font-size: var(--yazi-m);
+}
+/* Kaydırma çubuğu yalnızca imleç paneldeyken: cam yüzeyin kenarı temiz kalsın */
+#yardim::-webkit-scrollbar { width: 5px; }
+#yardim::-webkit-scrollbar-track { background: transparent; }
+#yardim::-webkit-scrollbar-thumb {
+  background: transparent; border-radius: 3px;
+  transition: background var(--sure);
+}
+#yardim:hover::-webkit-scrollbar-thumb { background: rgba(134, 134, 139, 0.4); }
+#yardim-baslik {
+  display: flex; justify-content: space-between; align-items: center;
+  letter-spacing: 3px; font-size: 12px; color: var(--metin); font-weight: 700;
+  margin-bottom: 12px;
+}
+#yardim-kapat {
+  cursor: pointer; color: var(--sonuk);
+  font-weight: 400; font-size: 11px;
+  padding: 4px 10px; border-radius: 7px;
+}
+#yardim-kapat:hover { background: rgba(29, 29, 31, 0.06); color: var(--metin); }
+.yardim-bolum {
+  color: var(--vurgu); letter-spacing: 2px; font-size: 10px; font-weight: 700;
+  margin: 16px 0 8px; border-bottom: 1px solid var(--cizgi);
+  padding-bottom: 5px;
+}
+/* Yardım panelinde komut ARAMA kutusu (başlık satırının sağında) */
+#yardim-ara {
+  float: right; margin-top: -3px;
+  background: transparent; border: 1px solid var(--cizgi); border-radius: 6px;
+  color: var(--metin); font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0; padding: 3px 8px; width: 130px; outline: none;
+}
+#yardim-ara:focus { border-color: var(--vurgu); }
+
+/* Komut KATEGORİLERİ: katlanabilir başlıklar. 200+ komut düz liste halinde
+   okunamıyordu; başlık + sayı + tek satır açıklama ile "neler yapabiliyor"
+   sorusu bir bakışta cevaplanıyor. */
+.ygrup { margin: 10px 0 4px; }
+.ygrup > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: baseline;
+  gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--cizgi);
+}
+.ygrup > summary::-webkit-details-marker { display: none; }
+.ygrup > summary::before {
+  content: "▸"; color: var(--sonuk); font-size: 9px; width: 9px;
+  transition: transform 0.15s;
+}
+.ygrup[open] > summary::before { content: "▾"; }
+.yg-ad { color: var(--metin); font-size: 12px; font-weight: 650; }
+.yg-sayi {
+  color: var(--vurgu); font-family: var(--mono); font-size: 10px;
+  border: 1px solid var(--cizgi); border-radius: 20px; padding: 1px 6px;
+}
+.yg-aciklama {
+  color: var(--sonuk); font-size: 10.5px; flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ygrup .yardim-satir { padding-left: 17px; }
+
+.yardim-satir { display: flex; gap: 14px; line-height: 2.1; }
+.y-ad {
+  color: var(--metin); min-width: 150px; white-space: nowrap;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+}
+.y-detay { color: var(--sonuk); }
+
+/* ================= HIZLI KİP =================
+   Ctrl+Space ile açılan ince çubuk: başlık, sohbet ve karınca sahnesi gizlenir;
+   yalnızca yazı çubuğu, öneri şeridi ve tek satırlık cevap kalır. Pencerenin
+   boyutu Python tarafında küçültülüyor (pera.hizli_kip). */
+body.hizli #kabuk > header,
+body.hizli #kabuk > #log,
+body.hizli #karincalar,
+body.hizli #grid { display: none; }
+body.hizli #kabuk { padding: 0; }
+body.hizli footer {
+  border-top: none;
+  padding: 10px 16px;
+}
+body.hizli #giris { font-size: 15px; }
+body.hizli #hizli-cevap { display: block; }
+/* Hızlı kip cevabı: tek satır, ama TUTAR/SAAT gibi vurgular zengin
+   oluşturucudan geliyor — yazı ölçeği büyük kademeye alındı ki tek bakışta
+   okunsun (hızlı kipte pencere ince bir şerit). */
+#hizli-cevap {
+  display: none;
+  padding: 0 18px 9px;
+  font-size: var(--yazi-l);
+  color: var(--metin);
+  letter-spacing: var(--sik);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  animation: icerik-yukse var(--sure) var(--yay-yumusak) both;
+}
+/* Hızlı kipte öneri şeridi çubuğun ÜSTÜNDE ve tek satır kalsın */
+body.hizli #oneri-serit {
+  padding: 8px 14px 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+/* ================= Mini mod (ada) ================= */
+#mini {
+  display: none;
+  position: absolute; inset: 0;
+  z-index: 20;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 8px;
+  /* Ada da cam: üstten gelen ışık gradyanı + iç parlaklık. Karıncalar
+     (#mini-karinca) bu camın ARDINDAN geçer. Saydamlık DÜŞÜK tutuldu:
+     ada küçük ve tek satır, arkadaki masaüstü yazıyı bozmamalı. */
+  background: linear-gradient(180deg,
+              rgba(255, 255, 255, 0.94) 0%, rgba(244, 244, 246, 0.9) 100%);
+  -webkit-backdrop-filter: var(--cam-2-bulani);
+          backdrop-filter: var(--cam-2-bulani);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+              inset 0 0 0 1px rgba(29, 29, 31, 0.06),
+              var(--golge-1);
+}
+/* Ada karanlık temada: #mini'nin arka planı SABİT beyaz gradyandı, yazı rengi
+   ise temayla değişiyordu -> gece modunda beyaz zeminde beyaz yazı çıkıyor ve
+   hiçbir şey okunmuyordu (yaşandı). Ada da tema değişkenlerine bağlandı. */
+body.gece #mini {
+  background: linear-gradient(180deg,
+              rgba(36, 38, 42, 0.94) 0%, rgba(26, 28, 31, 0.92) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+              var(--golge-1);
+}
+body.gece #mini-karinca { opacity: 0.7; }   /* koyu zeminde karıncalar silikleşiyor */
+body.mini { background: var(--zemin); }
+body.mini #kabuk > header,
+body.mini #kabuk > #log,
+body.mini #kabuk > footer,
+body.mini #grid { display: none; }
+body.mini #mini { display: flex; }
+#mini-nokta {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--vurgu);
+  box-shadow: 0 0 6px rgba(92, 110, 20, 0.45);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+#mini.dinliyor #mini-nokta,
+#mini.konusuyor #mini-nokta { animation: rozet-nabiz 1s ease-in-out infinite; }
+#mini.isleniyor #mini-nokta {
+  background: var(--ikincil);
+  box-shadow: 0 0 6px rgba(217, 119, 6, 0.45);
+}
+#mini-metin {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  color: var(--metin);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#mini-karinca {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+/* ---- Sürükle-bırak (C3) ----
+   Dosya pencerenin üstüne geldiğinde kabuk hafifçe aydınlanıyor.
+   Ayrı bir katman/örtü KOYULMADI: örtü koymak fare olaylarını yiyor ve
+   drop olayı örtüye gidip kabuğa hiç gelmiyordu. */
+body.birakma-hazir #kabuk {
+  outline: 2px dashed var(--vurgu);
+  outline-offset: -6px;
+  transition: outline-color 160ms ease;
+}
+body.birakma-hazir #kabuk::after {
+  content: "Bırak, ne yapacağımı sorayım";
+  position: absolute;
+  left: 50%; bottom: 78px;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--cam-2-dolgu);
+  border: 1px solid var(--cam-kenar);
+  color: var(--yazi);
+  font-size: 12px;
+  pointer-events: none;          /* örtü gibi davranmasın, drop'u yemesin */
+  box-shadow: var(--golge-2);
+}
